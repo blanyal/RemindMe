@@ -103,7 +103,7 @@ public class ReminderAddActivity extends AppCompatActivity implements
         // Initialize default values
         mActive = "true";
         mRepeat = "true";
-        mRepeatNo = Integer.toString(1);
+        mRepeatNo = "1";
         mRepeatType = "Hour";
 
         mCalendar = Calendar.getInstance();
@@ -312,7 +312,7 @@ public class ReminderAddActivity extends AppCompatActivity implements
                     public void onClick(DialogInterface dialog, int whichButton) {
 
                         if (input.getText().toString().length() == 0) {
-                            mRepeatNo = Integer.toString(1);
+                            mRepeatNo = "1";
                             mRepeatNoText.setText(mRepeatNo);
                             mRepeatText.setText("Every " + mRepeatNo + " " + mRepeatType + "(s)");
                         }
