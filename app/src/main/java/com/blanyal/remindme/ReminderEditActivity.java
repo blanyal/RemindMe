@@ -71,6 +71,7 @@ public class ReminderEditActivity extends AppCompatActivity implements
 
     // Constant Intent String
     public static final String EXTRA_REMINDER_ID = "Reminder_ID";
+    public static final String EXTRA_TEST_BOOL = "false";
 
     // Values for orientation change
     private static final String KEY_TITLE = "title_key";

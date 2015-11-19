@@ -41,6 +41,7 @@ public class AlarmReceiver extends WakefulBroadcastReceiver {
     @Override
     public void onReceive(Context context, Intent intent) {
         int mReceivedID = Integer.parseInt(intent.getStringExtra(ReminderEditActivity.EXTRA_REMINDER_ID));
+        String testBool = intent.getStringExtra(ReminderEditActivity.EXTRA_TEST_BOOL);
 
         // Get notification title from Reminder Database
         ReminderDatabase rb = new ReminderDatabase(context);
@@ -63,9 +64,13 @@ public class AlarmReceiver extends WakefulBroadcastReceiver {
                 .setContentIntent(mClick)
                 .setAutoCancel(true)
                 .setOnlyAlertOnce(true);
-
+        if (testBool == "true"){
+            NotificationTestManager ntest = new NotificationTestManager();
+            ntest.testNotify(mBuilder.build(), context);
+        }
         NotificationManager nManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
         nManager.notify(mReceivedID, mBuilder.build());
+
     }
 
     public void setAlarm(Context context, Calendar calendar, int ID) {

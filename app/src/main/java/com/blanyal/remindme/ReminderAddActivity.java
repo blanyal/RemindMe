@@ -25,6 +25,7 @@ import android.support.v7.widget.Toolbar;
 import android.text.Editable;
 import android.text.InputType;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -337,6 +338,13 @@ public class ReminderAddActivity extends AppCompatActivity implements
 
         // Creating Reminder
         int ID = rb.addReminder(new Reminder(mTitle, mDate, mTime, mRepeat, mRepeatNo, mRepeatType, mActive));
+        Log.d("Title:" , mTitle);
+        Log.d("Title:" , mDate);
+        Log.d("Title:" , mTime);
+        Log.d("Title:" , mRepeat);
+        Log.d("Title:" , mRepeatNo);
+        Log.d("Title:" , mRepeatType);
+        Log.d("Title:" , mActive);
 
         // Set up calender for creating the notification
         mCalendar.set(Calendar.MONTH, --mMonth);
