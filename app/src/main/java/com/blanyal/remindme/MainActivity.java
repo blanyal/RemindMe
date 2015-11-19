@@ -192,7 +192,9 @@ public class MainActivity extends AppCompatActivity {
 
         // Create intent to edit the reminder
         // Put reminder id as extra
-
+        Intent i = new Intent(this, ReminderEditActivity.class);
+        i.putExtra(ReminderEditActivity.EXTRA_REMINDER_ID, mStringClickID);
+        startActivityForResult(i, 1);
     }
 
     @Override
