@@ -64,7 +64,7 @@ public class AlarmReceiver extends WakefulBroadcastReceiver {
                 .setContentIntent(mClick)
                 .setAutoCancel(true)
                 .setOnlyAlertOnce(true);
-        if (testBool == "true"){
+        if (testBool.equals("true")){
             NotificationTestManager ntest = new NotificationTestManager();
             ntest.testNotify(mBuilder.build(), context);
         }
