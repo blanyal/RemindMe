@@ -26,6 +26,7 @@ import android.support.v7.widget.Toolbar;
 import android.text.Editable;
 import android.text.InputType;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -71,7 +72,6 @@ public class ReminderEditActivity extends AppCompatActivity implements
 
     // Constant Intent String
     public static final String EXTRA_REMINDER_ID = "Reminder_ID";
-    public static final String EXTRA_TEST_BOOL = "false";
 
     // Values for orientation change
     private static final String KEY_TITLE = "title_key";
@@ -133,6 +133,14 @@ public class ReminderEditActivity extends AppCompatActivity implements
 
         // Get reminder using reminder id
         rb = new ReminderDatabase(this);
+        Log.d("NOTE", "rb made");
+        if (!rb.checkForID(mReceivedID)){
+            Toast.makeText(getApplicationContext(), "Alarm Does Not Exist Anymore",
+                    Toast.LENGTH_SHORT).show();
+            finish();
+            return;
+            //Log.d("NOTE", "TRIED CANCEL");
+        }
         mReceivedReminder = rb.getReminder(mReceivedID);
 
         // Get values from reminder

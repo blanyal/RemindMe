@@ -25,6 +25,7 @@ import android.support.v7.widget.Toolbar;
 import android.text.Editable;
 import android.text.InputType;
 import android.text.TextWatcher;
+import android.text.format.DateFormat;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -39,6 +40,7 @@ import com.wdullaer.materialdatetimepicker.time.RadialPickerLayout;
 import com.wdullaer.materialdatetimepicker.time.TimePickerDialog;
 
 import java.util.Calendar;
+import java.util.Date;
 
 
 public class ReminderAddActivity extends AppCompatActivity implements
@@ -200,7 +202,7 @@ public class ReminderAddActivity extends AppCompatActivity implements
                 this,
                 now.get(Calendar.HOUR_OF_DAY),
                 now.get(Calendar.MINUTE),
-                false
+                DateFormat.is24HourFormat(getApplicationContext())
         );
         tpd.setThemeDark(false);
         tpd.show(getFragmentManager(), "Timepickerdialog");
@@ -214,6 +216,7 @@ public class ReminderAddActivity extends AppCompatActivity implements
                 now.get(Calendar.YEAR),
                 now.get(Calendar.MONTH),
                 now.get(Calendar.DAY_OF_MONTH)
+
         );
         dpd.show(getFragmentManager(), "Datepickerdialog");
     }
@@ -315,8 +318,7 @@ public class ReminderAddActivity extends AppCompatActivity implements
                             mRepeatNo = Integer.toString(1);
                             mRepeatNoText.setText(mRepeatNo);
                             mRepeatText.setText("Every " + mRepeatNo + " " + mRepeatType + "(s)");
-                        }
-                        else {
+                        } else {
                             mRepeatNo = input.getText().toString().trim();
                             mRepeatNoText.setText(mRepeatNo);
                             mRepeatText.setText("Every " + mRepeatNo + " " + mRepeatType + "(s)");
@@ -331,48 +333,69 @@ public class ReminderAddActivity extends AppCompatActivity implements
         alert.show();
     }
 
+    public boolean afterCurrentTimeDate(){
+        Date now = new Date();
+        Calendar me = Calendar.getInstance();
+        me.set(Calendar.MONTH, mMonth-1);
+        me.set(Calendar.YEAR, mYear);
+        me.set(Calendar.DAY_OF_MONTH, mDay);
+        me.set(Calendar.HOUR_OF_DAY, mHour);
+        me.set(Calendar.MINUTE, mMinute);
+        me.set(Calendar.SECOND, 0);
+        if(now.compareTo(me.getTime())<0){
+            return true;
+        } else {
+            return false;
+        }
+    }
+
     // On clicking the save button
     public void saveReminder(){
-        ReminderDatabase rb = new ReminderDatabase(this);
+        if(afterCurrentTimeDate()) {
+            ReminderDatabase rb = new ReminderDatabase(this);
 
-        // Creating Reminder
-        int ID = rb.addReminder(new Reminder(mTitle, mDate, mTime, mRepeat, mRepeatNo, mRepeatType, mActive));
+            // Creating Reminder
+            int ID = rb.addReminder(new Reminder(mTitle, mDate, mTime, mRepeat, mRepeatNo, mRepeatType, mActive));
 
-        // Set up calender for creating the notification
-        mCalendar.set(Calendar.MONTH, --mMonth);
-        mCalendar.set(Calendar.YEAR, mYear);
-        mCalendar.set(Calendar.DAY_OF_MONTH, mDay);
-        mCalendar.set(Calendar.HOUR_OF_DAY, mHour);
-        mCalendar.set(Calendar.MINUTE, mMinute);
-        mCalendar.set(Calendar.SECOND, 0);
+            // Set up calender for creating the notification
+            mCalendar.set(Calendar.MONTH, --mMonth);
+            mCalendar.set(Calendar.YEAR, mYear);
+            mCalendar.set(Calendar.DAY_OF_MONTH, mDay);
+            mCalendar.set(Calendar.HOUR_OF_DAY, mHour);
+            mCalendar.set(Calendar.MINUTE, mMinute);
+            mCalendar.set(Calendar.SECOND, 0);
 
-        // Check repeat type
-        if (mRepeatType.equals("Minute")) {
-            mRepeatTime = Integer.parseInt(mRepeatNo) * milMinute;
-        } else if (mRepeatType.equals("Hour")) {
-            mRepeatTime = Integer.parseInt(mRepeatNo) * milHour;
-        } else if (mRepeatType.equals("Day")) {
-            mRepeatTime = Integer.parseInt(mRepeatNo) * milDay;
-        } else if (mRepeatType.equals("Week")) {
-            mRepeatTime = Integer.parseInt(mRepeatNo) * milWeek;
-        } else if (mRepeatType.equals("Month")) {
-            mRepeatTime = Integer.parseInt(mRepeatNo) * milMonth;
-        }
-
-        // Create a new notification
-        if (mActive.equals("true")) {
-            if (mRepeat.equals("true")) {
-                new AlarmReceiver().setRepeatAlarm(getApplicationContext(), mCalendar, ID, mRepeatTime);
-            } else if (mRepeat.equals("false")) {
-                new AlarmReceiver().setAlarm(getApplicationContext(), mCalendar, ID);
+            // Check repeat type
+            if (mRepeatType.equals("Minute")) {
+                mRepeatTime = Integer.parseInt(mRepeatNo) * milMinute;
+            } else if (mRepeatType.equals("Hour")) {
+                mRepeatTime = Integer.parseInt(mRepeatNo) * milHour;
+            } else if (mRepeatType.equals("Day")) {
+                mRepeatTime = Integer.parseInt(mRepeatNo) * milDay;
+            } else if (mRepeatType.equals("Week")) {
+                mRepeatTime = Integer.parseInt(mRepeatNo) * milWeek;
+            } else if (mRepeatType.equals("Month")) {
+                mRepeatTime = Integer.parseInt(mRepeatNo) * milMonth;
             }
+
+            // Create a new notification
+            if (mActive.equals("true")) {
+                if (mRepeat.equals("true")) {
+                    new AlarmReceiver().setRepeatAlarm(getApplicationContext(), mCalendar, ID, mRepeatTime);
+                } else if (mRepeat.equals("false")) {
+                    new AlarmReceiver().setAlarm(getApplicationContext(), mCalendar, ID);
+                }
+            }
+
+            // Create toast to confirm new reminder
+            Toast.makeText(getApplicationContext(), "Saved",
+                    Toast.LENGTH_SHORT).show();
+
+            onBackPressed();
+        } else {
+            Toast.makeText(getApplicationContext(), "Alarm Time and Date Must Be After Current Time and Date",
+                    Toast.LENGTH_LONG).show();
         }
-
-        // Create toast to confirm new reminder
-        Toast.makeText(getApplicationContext(), "Saved",
-                Toast.LENGTH_SHORT).show();
-
-        onBackPressed();
     }
 
     // On pressing the back button
