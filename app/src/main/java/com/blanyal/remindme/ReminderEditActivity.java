@@ -41,6 +41,7 @@ import com.wdullaer.materialdatetimepicker.time.RadialPickerLayout;
 import com.wdullaer.materialdatetimepicker.time.TimePickerDialog;
 
 import java.util.Calendar;
+import java.util.Date;
 
 
 public class ReminderEditActivity extends AppCompatActivity implements
@@ -133,13 +134,11 @@ public class ReminderEditActivity extends AppCompatActivity implements
 
         // Get reminder using reminder id
         rb = new ReminderDatabase(this);
-        Log.d("NOTE", "rb made");
         if (!rb.checkForID(mReceivedID)){
             Toast.makeText(getApplicationContext(), "Alarm Does Not Exist Anymore",
                     Toast.LENGTH_SHORT).show();
             finish();
             return;
-            //Log.d("NOTE", "TRIED CANCEL");
         }
         mReceivedReminder = rb.getReminder(mReceivedID);
 
@@ -363,8 +362,7 @@ public class ReminderEditActivity extends AppCompatActivity implements
                             mRepeatNo = Integer.toString(1);
                             mRepeatNoText.setText(mRepeatNo);
                             mRepeatText.setText("Every " + mRepeatNo + " " + mRepeatType + "(s)");
-                        }
-                        else {
+                        } else {
                             mRepeatNo = input.getText().toString().trim();
                             mRepeatNoText.setText(mRepeatNo);
                             mRepeatText.setText("Every " + mRepeatNo + " " + mRepeatType + "(s)");
@@ -379,57 +377,80 @@ public class ReminderEditActivity extends AppCompatActivity implements
         alert.show();
     }
 
+    // Check that date is after current date
+    public boolean afterCurrentTimeDate(){
+        Date now = new Date();
+        Calendar me = Calendar.getInstance();
+        me.set(Calendar.MONTH, mMonth-1);
+        me.set(Calendar.YEAR, mYear);
+        me.set(Calendar.DAY_OF_MONTH, mDay);
+        me.set(Calendar.HOUR_OF_DAY, mHour);
+        me.set(Calendar.MINUTE, mMinute);
+        me.set(Calendar.SECOND, 0);
+        if(now.compareTo(me.getTime())<0){
+            return true;
+        } else {
+            return false;
+        }
+    }
+
     // On clicking the update button
     public void updateReminder(){
         // Set new values in the reminder
-        mReceivedReminder.setTitle(mTitle);
-        mReceivedReminder.setDate(mDate);
-        mReceivedReminder.setTime(mTime);
-        mReceivedReminder.setRepeat(mRepeat);
-        mReceivedReminder.setRepeatNo(mRepeatNo);
-        mReceivedReminder.setRepeatType(mRepeatType);
-        mReceivedReminder.setActive(mActive);
+        if (afterCurrentTimeDate()) {
+            mReceivedReminder.setTitle(mTitle);
+            mReceivedReminder.setDate(mDate);
+            mReceivedReminder.setTime(mTime);
+            mReceivedReminder.setRepeat(mRepeat);
+            mReceivedReminder.setRepeatNo(mRepeatNo);
+            mReceivedReminder.setRepeatType(mRepeatType);
+            mReceivedReminder.setActive(mActive);
 
-        // Update reminder
-        rb.updateReminder(mReceivedReminder);
+            // Update reminder
+            rb.updateReminder(mReceivedReminder);
 
-        // Set up calender for creating the notification
-        mCalendar.set(Calendar.MONTH, --mMonth);
-        mCalendar.set(Calendar.YEAR, mYear);
-        mCalendar.set(Calendar.DAY_OF_MONTH, mDay);
-        mCalendar.set(Calendar.HOUR_OF_DAY, mHour);
-        mCalendar.set(Calendar.MINUTE, mMinute);
-        mCalendar.set(Calendar.SECOND, 0);
+            // Set up calender for creating the notification
+            mCalendar.set(Calendar.MONTH, --mMonth);
+            mCalendar.set(Calendar.YEAR, mYear);
+            mCalendar.set(Calendar.DAY_OF_MONTH, mDay);
+            mCalendar.set(Calendar.HOUR_OF_DAY, mHour);
+            mCalendar.set(Calendar.MINUTE, mMinute);
+            mCalendar.set(Calendar.SECOND, 0);
 
-        // Cancel existing notification of the reminder by using its ID
-        mAlarmReceiver.cancelAlarm(getApplicationContext(), mReceivedID);
+            // Cancel existing notification of the reminder by using its ID
+            mAlarmReceiver.cancelAlarm(getApplicationContext(), mReceivedID);
 
-        // Check repeat type
-        if (mRepeatType.equals("Minute")) {
-            mRepeatTime = Integer.parseInt(mRepeatNo) * milMinute;
-        } else if (mRepeatType.equals("Hour")) {
-            mRepeatTime = Integer.parseInt(mRepeatNo) * milHour;
-        } else if (mRepeatType.equals("Day")) {
-            mRepeatTime = Integer.parseInt(mRepeatNo) * milDay;
-        } else if (mRepeatType.equals("Week")) {
-            mRepeatTime = Integer.parseInt(mRepeatNo) * milWeek;
-        } else if (mRepeatType.equals("Month")) {
-            mRepeatTime = Integer.parseInt(mRepeatNo) * milMonth;
-        }
-
-        // Create a new notification
-        if (mActive.equals("true")) {
-            if (mRepeat.equals("true")) {
-                mAlarmReceiver.setRepeatAlarm(getApplicationContext(), mCalendar, mReceivedID, mRepeatTime);
-            } else if (mRepeat.equals("false")) {
-                mAlarmReceiver.setAlarm(getApplicationContext(), mCalendar, mReceivedID);
+            // Check repeat type
+            if (mRepeatType.equals("Minute")) {
+                mRepeatTime = Integer.parseInt(mRepeatNo) * milMinute;
+            } else if (mRepeatType.equals("Hour")) {
+                mRepeatTime = Integer.parseInt(mRepeatNo) * milHour;
+            } else if (mRepeatType.equals("Day")) {
+                mRepeatTime = Integer.parseInt(mRepeatNo) * milDay;
+            } else if (mRepeatType.equals("Week")) {
+                mRepeatTime = Integer.parseInt(mRepeatNo) * milWeek;
+            } else if (mRepeatType.equals("Month")) {
+                mRepeatTime = Integer.parseInt(mRepeatNo) * milMonth;
             }
-        }
 
-        // Create toast to confirm update
-        Toast.makeText(getApplicationContext(), "Edited",
-                Toast.LENGTH_SHORT).show();
-        onBackPressed();
+            // Create a new notification
+            if (mActive.equals("true")) {
+                if (mRepeat.equals("true")) {
+                    mAlarmReceiver.setRepeatAlarm(getApplicationContext(), mCalendar, mReceivedID, mRepeatTime);
+                } else if (mRepeat.equals("false")) {
+                    mAlarmReceiver.setAlarm(getApplicationContext(), mCalendar, mReceivedID);
+                }
+            }
+
+            // Create toast to confirm update
+            Toast.makeText(getApplicationContext(), "Edited",
+                    Toast.LENGTH_SHORT).show();
+            onBackPressed();
+        } else {
+            // Create toast to notify that Alarm is not a valid future date
+            Toast.makeText(getApplicationContext(), "Alarm Time and Date Must Be After Current Time and Date",
+                    Toast.LENGTH_LONG).show();
+        }
     }
 
     // On pressing the back button

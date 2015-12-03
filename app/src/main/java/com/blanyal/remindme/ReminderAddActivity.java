@@ -333,6 +333,7 @@ public class ReminderAddActivity extends AppCompatActivity implements
         alert.show();
     }
 
+    // Check that date is after current date
     public boolean afterCurrentTimeDate(){
         Date now = new Date();
         Calendar me = Calendar.getInstance();
@@ -393,6 +394,7 @@ public class ReminderAddActivity extends AppCompatActivity implements
 
             onBackPressed();
         } else {
+            // Create toast to notify that Alarm is not a valid future date
             Toast.makeText(getApplicationContext(), "Alarm Time and Date Must Be After Current Time and Date",
                     Toast.LENGTH_LONG).show();
         }
