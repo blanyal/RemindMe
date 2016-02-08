@@ -65,7 +65,7 @@ public class ReminderEditActivity extends AppCompatActivity implements
     private int mYear, mMonth, mHour, mMinute, mDay;
     private long mRepeatTime;
     private Calendar mCalendar;
-    private Reminder mReceivedReminder;
+        private Reminder mReceivedReminder;
     private ReminderDatabase rb;
     private AlarmReceiver mAlarmReceiver;
 

@@ -336,7 +336,7 @@ public class ReminderAddActivity extends AppCompatActivity implements
         ReminderDatabase rb = new ReminderDatabase(this);
 
         // Creating Reminder
-        int ID = rb.addReminder(new Reminder(mTitle, mDate, mTime, mRepeat, mRepeatNo, mRepeatType, mActive));
+            int ID = rb.addReminder(new Reminder(mTitle, mDate, mTime, mRepeat, mRepeatNo, mRepeatType, mActive));
 
         // Set up calender for creating the notification
         mCalendar.set(Calendar.MONTH, --mMonth);
