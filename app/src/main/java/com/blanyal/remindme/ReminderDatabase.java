@@ -98,6 +98,19 @@ public class ReminderDatabase extends SQLiteOpenHelper {
         return (int) ID;
     }
 
+    // Determines if the id exists in the reminder database
+    public boolean checkForID(int id) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        String Query = "Select * from " + TABLE_REMINDERS + " where " + KEY_ID + " = " + id;
+        Cursor cursor = db.rawQuery(Query, null);
+        if(cursor.getCount() <= 0){
+            cursor.close();
+            return false;
+        }
+        cursor.close();
+        return true;
+    }
+
     // Getting single Reminder
     public Reminder getReminder(int id){
         SQLiteDatabase db = this.getReadableDatabase();
