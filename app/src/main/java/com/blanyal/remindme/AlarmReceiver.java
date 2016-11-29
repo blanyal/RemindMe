@@ -62,7 +62,8 @@ public class AlarmReceiver extends WakefulBroadcastReceiver {
                 .setSound(RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION))
                 .setContentIntent(mClick)
                 .setAutoCancel(true)
-                .setOnlyAlertOnce(true);
+                .setOnlyAlertOnce(true)
+                .setSound(getAlarmUri()); //Play difault sound from phone
 
         NotificationManager nManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
         nManager.notify(mReceivedID, mBuilder.build());
@@ -133,5 +134,23 @@ public class AlarmReceiver extends WakefulBroadcastReceiver {
         pm.setComponentEnabledSetting(receiver,
                 PackageManager.COMPONENT_ENABLED_STATE_DISABLED,
                 PackageManager.DONT_KILL_APP);
+    }
+    
+    // Finding sound uri for notification
+    private Uri getAlarmUri(){
+
+        Uri alert = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM);
+
+        if(alert == null){
+
+            alert = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
+
+            if(alert == null ){
+
+                alert = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_RINGTONE);
+
+            }
+        }
+        return  alert;
     }
 }
