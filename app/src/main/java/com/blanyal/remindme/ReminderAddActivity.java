@@ -17,6 +17,7 @@
 
 package com.blanyal.remindme;
 
+
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.os.Bundle;
@@ -25,6 +26,7 @@ import android.support.v7.widget.Toolbar;
 import android.text.Editable;
 import android.text.InputType;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -34,9 +36,12 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.getbase.floatingactionbutton.FloatingActionButton;
-import com.wdullaer.materialdatetimepicker.date.DatePickerDialog;
-import com.wdullaer.materialdatetimepicker.time.RadialPickerLayout;
-import com.wdullaer.materialdatetimepicker.time.TimePickerDialog;
+
+
+import com.mohamadamin.persianmaterialdatetimepicker.date.DatePickerDialog;
+import com.mohamadamin.persianmaterialdatetimepicker.time.RadialPickerLayout;
+import com.mohamadamin.persianmaterialdatetimepicker.time.TimePickerDialog;
+import com.mohamadamin.persianmaterialdatetimepicker.utils.PersianCalendar;
 
 import java.util.Calendar;
 
@@ -50,7 +55,8 @@ public class ReminderAddActivity extends AppCompatActivity implements
     private TextView mDateText, mTimeText, mRepeatText, mRepeatNoText, mRepeatTypeText;
     private FloatingActionButton mFAB1;
     private FloatingActionButton mFAB2;
-    private Calendar mCalendar;
+    private Calendar gCalendar;
+    private PersianCalendar pCalendar = new PersianCalendar();
     private int mYear, mMonth, mHour, mMinute, mDay;
     private long mRepeatTime;
     private String mTitle;
@@ -106,15 +112,22 @@ public class ReminderAddActivity extends AppCompatActivity implements
         mRepeatNo = Integer.toString(1);
         mRepeatType = "Hour";
 
-        mCalendar = Calendar.getInstance();
-        mHour = mCalendar.get(Calendar.HOUR_OF_DAY);
-        mMinute = mCalendar.get(Calendar.MINUTE);
-        mYear = mCalendar.get(Calendar.YEAR);
-        mMonth = mCalendar.get(Calendar.MONTH) + 1;
-        mDay = mCalendar.get(Calendar.DATE);
+        // Getting current time and date in Gregorian
+        gCalendar = Calendar.getInstance();
+        mHour = gCalendar.get(Calendar.HOUR_OF_DAY);
+        mMinute = gCalendar.get(Calendar.MINUTE);
+        mYear = gCalendar.get(Calendar.YEAR);
+        mMonth = gCalendar.get(Calendar.MONTH) + 1;
+        mDay = gCalendar.get(Calendar.DATE);
 
-        mDate = mDay + "/" + mMonth + "/" + mYear;
+        //Converting Gregorian to Jalali Just for Show
+        CalendarTool calendarTool = new CalendarTool();
+        calendarTool.setGregorianDate(mYear , mMonth , mDay);
+
+        mDate = calendarTool.getIranianDay() + "/" + calendarTool.getIranianMonth() + "/" + calendarTool.getIranianYear();
         mTime = mHour + ":" + mMinute;
+
+      
 
         // Setup Reminder Title EditText
         mTitleText.addTextChangedListener(new TextWatcher() {
@@ -208,14 +221,17 @@ public class ReminderAddActivity extends AppCompatActivity implements
 
     // On clicking Date picker
     public void setDate(View v){
-        Calendar now = Calendar.getInstance();
+
+        PersianCalendar now = new PersianCalendar();
         DatePickerDialog dpd = DatePickerDialog.newInstance(
                 this,
-                now.get(Calendar.YEAR),
-                now.get(Calendar.MONTH),
-                now.get(Calendar.DAY_OF_MONTH)
+                now.getPersianYear(),
+                now.getPersianMonth(),
+                now.getPersianDay()
+
         );
         dpd.show(getFragmentManager(), "Datepickerdialog");
+
     }
 
     // Obtain time from time picker
@@ -234,12 +250,20 @@ public class ReminderAddActivity extends AppCompatActivity implements
     // Obtain date from date picker
     @Override
     public void onDateSet(DatePickerDialog view, int year, int monthOfYear, int dayOfMonth) {
-        monthOfYear ++;
-        mDay = dayOfMonth;
-        mMonth = monthOfYear;
-        mYear = year;
-        mDate = dayOfMonth + "/" + monthOfYear + "/" + year;
+        // COnverting Jalali to Gregorian
+        CalendarTool calendarToolnew = new CalendarTool();
+        calendarToolnew.setIranianDate(year , monthOfYear , dayOfMonth);
+
+        monthOfYear++;
+
+        mDay =    calendarToolnew.getGregorianDay();
+        mMonth =  calendarToolnew.getGregorianMonth()+1 ;
+        mYear  =  calendarToolnew.getGregorianYear();
+
+        //Jalali Just for Showing
+        mDate  =  dayOfMonth + "/" + monthOfYear + "/" + year;
         mDateText.setText(mDate);
+
     }
 
     // On clicking the active button
@@ -339,12 +363,12 @@ public class ReminderAddActivity extends AppCompatActivity implements
         int ID = rb.addReminder(new Reminder(mTitle, mDate, mTime, mRepeat, mRepeatNo, mRepeatType, mActive));
 
         // Set up calender for creating the notification
-        mCalendar.set(Calendar.MONTH, --mMonth);
-        mCalendar.set(Calendar.YEAR, mYear);
-        mCalendar.set(Calendar.DAY_OF_MONTH, mDay);
-        mCalendar.set(Calendar.HOUR_OF_DAY, mHour);
-        mCalendar.set(Calendar.MINUTE, mMinute);
-        mCalendar.set(Calendar.SECOND, 0);
+        gCalendar.set(Calendar.MONTH, --mMonth);
+        gCalendar.set(Calendar.YEAR, mYear);
+        gCalendar.set(Calendar.DAY_OF_MONTH, mDay);
+        gCalendar.set(Calendar.HOUR_OF_DAY, mHour);
+        gCalendar.set(Calendar.MINUTE, mMinute);
+        gCalendar.set(Calendar.SECOND, 0);
 
         // Check repeat type
         if (mRepeatType.equals("Minute")) {
@@ -362,9 +386,9 @@ public class ReminderAddActivity extends AppCompatActivity implements
         // Create a new notification
         if (mActive.equals("true")) {
             if (mRepeat.equals("true")) {
-                new AlarmReceiver().setRepeatAlarm(getApplicationContext(), mCalendar, ID, mRepeatTime);
+                new AlarmReceiver().setRepeatAlarm(getApplicationContext(), gCalendar, ID, mRepeatTime);
             } else if (mRepeat.equals("false")) {
-                new AlarmReceiver().setAlarm(getApplicationContext(), mCalendar, ID);
+                new AlarmReceiver().setAlarm(getApplicationContext(), gCalendar, ID);
             }
         }
 
@@ -425,4 +449,3 @@ public class ReminderAddActivity extends AppCompatActivity implements
                 return super.onOptionsItemSelected(item);
         }
     }
-}
