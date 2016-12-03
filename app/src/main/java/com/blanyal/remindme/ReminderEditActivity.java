@@ -272,12 +272,20 @@ public class ReminderEditActivity extends AppCompatActivity implements
     // Obtain date from date picker
     @Override
     public void onDateSet(DatePickerDialog view, int year, int monthOfYear, int dayOfMonth) {
-        monthOfYear ++;
-        mDay = dayOfMonth;
-        mMonth = monthOfYear;
-        mYear = year;
-        mDate = dayOfMonth + "/" + monthOfYear + "/" + year;
+        // COnverting Jalali to Gregorian
+        CalendarTool calendarToolnew = new CalendarTool();
+        calendarToolnew.setIranianDate(year , monthOfYear , dayOfMonth);
+
+        monthOfYear++;
+
+        mDay =    calendarToolnew.getGregorianDay();
+        mMonth =  calendarToolnew.getGregorianMonth()+1 ;
+        mYear  =  calendarToolnew.getGregorianYear();
+
+        //Jalali Just for Showing
+        mDate  =  dayOfMonth + "/" + monthOfYear + "/" + year;
         mDateText.setText(mDate);
+
     }
 
     // On clicking the active button
